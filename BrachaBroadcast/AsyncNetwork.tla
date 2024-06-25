@@ -4,26 +4,24 @@ EXTENDS Integers, Sequences, FiniteSets, TLC
 CONSTANTS NULL, NumNodes, NetworkTimesteps
 CONSTANTS src, dest, body, sendonce, type
 
-
+nodes == 1..NumNodes
 
 (* --algorithm NetworkAdversary
 variables
-    nodes = 1..NumNodes;
     global_queue = << >>;
     local_queues = [n \in nodes |-> << >>];
 
 define
-MsgType(msg) ==
-    DOMAIN msg = {src, dest, body, type, sendonce}
+    MsgType(msg) ==
+        DOMAIN msg = {src, dest, body, type, sendonce}
 
-AsyncNetworkProperty ==
-    <>(
-        Len(global_queue) > 0 => (\A msg \in global_queue: msg.sendonce)
-    )
+    AsyncNetworkProperty ==
+        <>(
+            Len(global_queue) > 0 => (\A msg \in global_queue: msg.sendonce)
+        )
 
-EnqueueForSend(m) ==
-    MsgType(m) => global_queue' = global_queue + << m >>
-
+    EnqueueForSend(m) ==
+        MsgType(m) => global_queue' = global_queue + << m >>
 end define;
 process network_adversary = "network_adversary"
 variables
@@ -51,8 +49,8 @@ end process;
 
 
 end algorithm; *)
-\* BEGIN TRANSLATION (chksum(pcal) = "db65b87f" /\ chksum(tla) = "e494f093")
-VARIABLES nodes, global_queue, local_queues, pc
+\* BEGIN TRANSLATION (chksum(pcal) = "d5581f38" /\ chksum(tla) = "ec828631")
+VARIABLES global_queue, local_queues, pc
 
 (* define statement *)
 MsgType(msg) ==
@@ -68,13 +66,11 @@ EnqueueForSend(m) ==
 
 VARIABLES next_msg, next_msg_idx, i
 
-vars == << nodes, global_queue, local_queues, pc, next_msg, next_msg_idx, i
-        >>
+vars == << global_queue, local_queues, pc, next_msg, next_msg_idx, i >>
 
 ProcSet == {"network_adversary"}
 
 Init == (* Global variables *)
-        /\ nodes = 1..NumNodes
         /\ global_queue = << >>
         /\ local_queues = [n \in nodes |-> << >>]
         (* Process network_adversary *)
@@ -97,7 +93,6 @@ SendMessage == /\ pc["network_adversary"] = "SendMessage"
                      ELSE /\ pc' = [pc EXCEPT !["network_adversary"] = "Done"]
                           /\ UNCHANGED << global_queue, local_queues, next_msg, 
                                           next_msg_idx, i >>
-               /\ nodes' = nodes
 
 network_adversary == SendMessage
 
